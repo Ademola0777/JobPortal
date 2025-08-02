@@ -29,12 +29,18 @@ connectDB();
 app.use(express.json());
 
 // Routes
+app.get("/", (req, res) => {
+  res.json({ message: "Job Portal API is running" });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/save-jobs", savedJobsRoutes);
 app.use("/api/analytics", analyticsRoutes);
+
+
 
 // Start Server
 const PORT = process.env.PORT || 5000;
