@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const cloudinary = require("../config/cloudinary");
 const User = require("../models/User");
 
 // @desc    Update user profile (name, avatar, company details)
@@ -40,11 +41,11 @@ exports.updateProfile = async (req, res) => {
 // @desc    Delete resume file (Jobseeker only)
 exports.deleteResume = async (req, res) => {
   try {
-    const { resumeUrl } = req.body; // expect resumeUrl to be the URL of the resume
+    const { resumeUrl } = req.body; // expect resumeUrl to be the Cloudinary URL
 
-    // Extract file name from the URL
-    const fileName = resumeUrl?.split("/")?.pop();
-
+    // Extract public_id from the Cloudinary URL
+    const publicId = resumeUrl?.split('/').pop().split('.')[0];
+    
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -53,12 +54,9 @@ exports.deleteResume = async (req, res) => {
         .status(403)
         .json({ message: "Only jobseekers can delete resume" });
 
-    // Construct the full file path
-    const filePath = path.join(__dirname, "../uploads", fileName);
-
-    // Check if the file exists and then delete
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath); // Delete the file
+    // Delete from Cloudinary if public ID exists
+    if (publicId) {
+      await cloudinary.uploader.destroy('job-portal/' + publicId);
     }
 
     // Set the user's resume to an empty string
